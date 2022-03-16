@@ -59,7 +59,7 @@ if __name__ == "__main__":
     user_id = tunnel_firestore_handler.get_user_id()
     if not tunnel_token:
         logger.error("This user does not have a valid tunnel token")
-        stop()
+        comm_module.stop()
         exit(1)
 
     tunnel_name_generator = TunnelNameGenerator(user_id, device_id)
