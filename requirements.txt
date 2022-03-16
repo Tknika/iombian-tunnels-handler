@@ -1,0 +1,4 @@
+google-auth==1.25.0
+google-cloud-firestore==2.0.2
+pyzmq==21.0.1
+boringproxy-api==0.2.3
