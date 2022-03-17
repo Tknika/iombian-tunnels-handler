@@ -20,6 +20,18 @@ class TunnelFirestoreHandler(FirestoreHandler):
         self.tunnels_cache = None
 
     def start(self):
+        logger.debug("Starting Firestore Tunnels Handler")
+        self.initialize_db()
+
+    def stop(self):
+        logger.debug("Stopping Firestore Tunnels Handler")
+        if self.device_subscription:
+            self.device_subscription.unsubscribe()
+            self.device_subscription = None
+        if self.db:
+            self.stop_db()
+
+    def initialize_db(self):
         super().initialize_db()
         if not self.db:
             logger.error("DB connection not ready")
@@ -28,13 +40,6 @@ class TunnelFirestoreHandler(FirestoreHandler):
         if not self.device_subscription:
             self.device_subscription = self.db.collection(self.devices_path).document(
                 self.device_id).on_snapshot(self.__on_device_update)
-
-    def stop(self):
-        if self.device_subscription:
-            self.device_subscription.unsubscribe()
-            self.device_subscription = None
-        if self.db:
-            self.stop_db()
 
     def get_tunnel_token(self):
         return self.__get_user_field("tunnel_token")
