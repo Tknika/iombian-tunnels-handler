@@ -23,6 +23,7 @@ class CommunicationModule(object):
         logger.debug("Stopping communication module")
         self.socket.close()
         self.context.term()
+        logger.debug("Communication module stopped")
 
     def execute_command(self, command, params=None):
         if not command:

@@ -54,7 +54,7 @@ class TunnelsHandler():
                 else:
                     logger.debug(
                         f"Tunnel for port '{tunnel_port}' is unpublished")
-                    self.__announce_tunnel_availability(
+                    self._announce_tunnel_availability(
                         tunnel_port, active_tunnel_url)
                 continue
             logger.debug(f"We must create a tunnel for port {tunnel_port}")
@@ -66,7 +66,7 @@ class TunnelsHandler():
                 tunnel_type, self.DEFAULT_TUNNEL_OPTIONS)
             url = self.bp_api_client.create_tunnel(domain,
                                                    tunnel_port, **tunnel_options)
-            self.__announce_tunnel_availability(
+            self._announce_tunnel_availability(
                 tunnel_port, url)
         for active_tunnel_port in self.active_tunnels.keys():
             if active_tunnel_port not in tunnels:
@@ -74,6 +74,6 @@ class TunnelsHandler():
                     f"Active tunnel for port '{active_tunnel_port}' not needed")
                 self.bp_api_client.delete_tunnel(active_tunnel_port)
 
-    def __announce_tunnel_availability(self, port, url):
+    def _announce_tunnel_availability(self, port, url):
         if self.tunnel_available_callback:
             self.tunnel_available_callback({"url": url, "port": port})

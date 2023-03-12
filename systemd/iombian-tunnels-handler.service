@@ -7,7 +7,7 @@ After=network.target network-online.target
 Type=simple
 User=iompi
 Restart=always
-RestartSec=5
+RestartSec=120
 
 WorkingDirectory=/opt/iombian-tunnels-handler
 ExecStart=/opt/iombian-tunnels-handler/venv/bin/python /opt/iombian-tunnels-handler/main.py

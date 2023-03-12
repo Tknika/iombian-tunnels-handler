@@ -34,6 +34,7 @@ class BoringproxyLocalClient:
             command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.output_checker_thread = threading.Thread(
             target=self.__output_checker)
+        self.output_checker_thread.daemon = True
         self.output_checker_thread.start()
 
     def stop(self):
