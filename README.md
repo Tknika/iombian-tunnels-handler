@@ -7,25 +7,29 @@ This service creates SSH tunnels and, using the [IoMBian Configurator platform](
 
 ## Installation
 
+- Define project name in an environment variable:
+
+> ```PROJECT_NAME=iombian-tunnels-handler```
+
 - Clone the repo into a temp folder:
 
-> ```git clone https://github.com/Tknika/iombian-tunnels-handler.git /tmp/iombian-tunnels-handler && cd /tmp/iombian-tunnels-handler```
+> ```git clone https://github.com/Tknika/${PROJECT_NAME}.git /tmp/${PROJECT_NAME} && cd /tmp/${PROJECT_NAME}```
 
 - Create the installation folder and move the appropiate files (edit the user):
 
-> ```sudo mkdir /opt/iombian-tunnels-handler```
+> ```sudo mkdir /opt/${PROJECT_NAME}```
 
-> ```sudo cp requirements.txt /opt/iombian-tunnels-handler```
+> ```sudo cp requirements.txt /opt/${PROJECT_NAME}```
 
-> ```sudo cp -r src/* /opt/iombian-tunnels-handler```
+> ```sudo cp -r src/* /opt/${PROJECT_NAME}```
 
-> ```sudo cp systemd/iombian-tunnels-handler.service /etc/systemd/system/```
+> ```sudo cp systemd/${PROJECT_NAME}.service /etc/systemd/system/```
 
-> ```sudo chown -R iompi:iompi /opt/iombian-tunnels-handler```
+> ```sudo chown -R iompi:iompi /opt/${PROJECT_NAME}```
 
 - Create the virtual environment and install the dependencies:
 
-> ```cd /opt/iombian-tunnels-handler```
+> ```cd /opt/${PROJECT_NAME}```
 
 > ```python3 -m venv venv```
 
@@ -37,7 +41,7 @@ This service creates SSH tunnels and, using the [IoMBian Configurator platform](
 
 - Start the script
 
-> ```sudo systemctl enable iombian-tunnels-handler.service && sudo systemctl start iombian-tunnels-handler.service```
+> ```sudo systemctl enable ${PROJECT_NAME}.service && sudo systemctl start ${PROJECT_NAME}.service```
 
 
 ## Author
