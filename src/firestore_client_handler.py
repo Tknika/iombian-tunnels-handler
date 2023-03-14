@@ -8,18 +8,19 @@ import json
 import logging
 import requests
 import threading
+import time
 
 logger = logging.getLogger(__name__)
 
-watch._should_recover = lambda x : False
-watch._should_terminate = lambda x : True
+watch._should_recover = lambda _: False
+watch._should_terminate = lambda _: True
 
 
 class FirestoreClientHandler:
 
     REFRESH_TOKEN_TIME_MIN = 58
     INITIALIZATION_RETRY_TIME_MIN = 1
-    SERVER_RESPONSE_TIMEOUT_S = 60
+    SERVER_RESPONSE_TIMEOUT_S = 90
 
     def __init__(self, api_key, project_id, refresh_token):
         self.api_key = api_key
@@ -33,25 +34,34 @@ class FirestoreClientHandler:
 
     def initialize_client(self, notify=True):
         if self.client:
-            if notify: threading.Thread(target=self.on_client_initialized, daemon=True).start()
+            if notify:
+                threading.Thread(
+                    target=self.on_client_initialized, daemon=True).start()
             return
 
         logger.debug("Initializing Firestore client")
         creds = self._get_credentials()
 
         if not creds:
-            if self.initialization_retry_timer: return
-            self.initialization_retry_timer = threading.Timer(self.INITIALIZATION_RETRY_TIME_MIN*60.0, self.on_initialization_retry)
+            if self.initialization_retry_timer:
+                return
+            self.initialization_retry_timer = threading.Timer(
+                self.INITIALIZATION_RETRY_TIME_MIN*60.0, self.on_initialization_retry)
             self.initialization_retry_timer.start()
             return
 
         self.client = Client(self.project_id, creds)
         logger.debug("Firebase client initialized")
-        if notify: threading.Thread(target=self.on_client_initialized, daemon=True).start()
-        self.server_responde_message_handler = ServerResponseMessageHandler(timeout_s=self.SERVER_RESPONSE_TIMEOUT_S, on_server_not_responding=self.on_server_not_responding)
+        if notify:
+            threading.Thread(target=self.on_client_initialized,
+                             daemon=True).start()
+        self.server_responde_message_handler = ServerResponseMessageHandler(
+            timeout_s=self.SERVER_RESPONSE_TIMEOUT_S, on_server_not_responding=self.on_server_not_responding)
         google.api_core.bidi._LOGGER = BidiCustomLogger()
-        google.api_core.bidi._LOGGER.addHandler(self.server_responde_message_handler)
-        self.token_expired_timer = threading.Timer(self.REFRESH_TOKEN_TIME_MIN*60.0, self.on_token_expired)
+        google.api_core.bidi._LOGGER.addHandler(
+            self.server_responde_message_handler)
+        self.token_expired_timer = threading.Timer(
+            self.REFRESH_TOKEN_TIME_MIN*60.0, self.on_token_expired)
         self.token_expired_timer.start()
 
     def stop_client(self):
@@ -59,6 +69,7 @@ class FirestoreClientHandler:
         self.client = None
         if self.server_responde_message_handler:
             self.server_responde_message_handler.stop()
+            self.server_responde_message_handler = None
         if self.initialization_retry_timer:
             self.initialization_retry_timer.cancel()
             self.initialization_retry_timer.join()
@@ -69,18 +80,21 @@ class FirestoreClientHandler:
             self.token_expired_timer = None
 
     def on_client_initialized(self):
-        logger.warning("This function should be overwritten by the child class")
+        logger.warning(
+            "This function should be overwritten by the child class")
 
     def on_server_not_responding(self):
-        logger.warning("This function should be overwritten by the child class")
+        logger.warning(
+            "This function should be overwritten by the child class")
 
     def on_token_expired(self):
-        logger.warning("This function should be overwritten by the child class")
+        logger.warning(
+            "This function should be overwritten by the child class")
 
     def on_initialization_retry(self):
         logger.warning("Retrying firebase client initialization...")
         self.initialization_retry_timer = None
-        threading.Thread(target=self.initialize_client).start()          
+        threading.Thread(target=self.initialize_client).start()
 
     def _get_credentials(self):
         user_id, token_id = self._get_ids()
@@ -123,9 +137,11 @@ class ServerResponseMessageHandler(logging.StreamHandler):
         self.timeout_s = timeout_s
         self.on_server_not_responding = on_server_not_responding
         self.server_response_msg = server_response_msg
+        self.server_response_last_time = time.time()
         self.watchdog_timeout_msg = watchdog_timeout_msg
         self.not_responding_timer = None
-        self.setFormatter(logging.Formatter('%(asctime)s %(levelname)-8s - %(name)-16s - %(message)s', None, '%'))
+        self.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)-8s - %(name)-16s - %(message)s', None, '%'))
 
     def emit(self, record):
         msg = self.format(record)
@@ -133,10 +149,13 @@ class ServerResponseMessageHandler(logging.StreamHandler):
             logger.debug("Server connection timeout detected")
             threading.Thread(target=self.on_server_not_responding).start()
         if self.server_response_msg in msg:
-            logger.debug("Server response message caught")
+            logger.debug("Server response message caught ({} seconds)".format(
+                time.time() - self.server_response_last_time))
+            self.server_response_last_time = time.time()
             if self.not_responding_timer:
                 self.stop()
-            self.not_responding_timer = threading.Timer(self.timeout_s, self.on_server_not_responding)
+            self.not_responding_timer = threading.Timer(
+                self.timeout_s, self.on_server_not_responding)
             self.not_responding_timer.start()
         if record.levelno >= logger.getEffectiveLevel():
             super().emit(record)
