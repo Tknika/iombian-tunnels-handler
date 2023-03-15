@@ -1,13 +1,14 @@
 [Unit]
 Description=IoMBian Tunnels Handler
-Wants=network-online.target
-After=network.target network-online.target
+Wants=network-online.target time-sync.target
+After=network.target network-online.target time-sync.target
 
 [Service]
 Type=simple
 User=iompi
 Restart=always
 RestartSec=120
+TimeoutStopSec=5
 
 WorkingDirectory=/opt/iombian-tunnels-handler
 ExecStart=/opt/iombian-tunnels-handler/venv/bin/python /opt/iombian-tunnels-handler/main.py
