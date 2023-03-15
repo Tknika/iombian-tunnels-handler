@@ -20,7 +20,7 @@ class FirestoreClientHandler:
 
     REFRESH_TOKEN_TIME_MIN = 58
     INITIALIZATION_RETRY_TIME_MIN = 1
-    SERVER_RESPONSE_TIMEOUT_S = 90
+    SERVER_RESPONSE_TIMEOUT_S = 60
 
     def __init__(self, api_key, project_id, refresh_token):
         self.api_key = api_key
